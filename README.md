@@ -86,5 +86,5 @@ $ ./spark-dbf.sh
 import com.esri.core.geometry.{GeometryEngine, Point}
 import com.esri.spark.dbf._
 val cp1251 = sqlContext.dbfFile("sp1251.dbf").registerTempTable("cp1251")
-sqlContext.sql("select * from cp1251").foreach(println)
+sqlContext.sql("select * from cp1251").rdd.foreach(println)
 ```
