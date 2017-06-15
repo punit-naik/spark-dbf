@@ -2,9 +2,9 @@ package com.esri;
 
 import com.esri.core.geometry.Point;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.sql.api.java.DataType;
-import org.apache.spark.sql.api.java.JavaSQLContext;
-import org.apache.spark.sql.api.java.Row;
+import org.apache.spark.sql.types.DataTypes;
+import org.apache.spark.sql.SQLContext;
+import org.apache.spark.sql.Row;
 import org.apache.spark.sql.api.java.UDF2;
 import org.junit.After;
 import org.junit.Before;
@@ -19,13 +19,13 @@ public class JavaTestSuite implements Serializable
 {
 
     private transient JavaSparkContext sc;
-    private transient JavaSQLContext sqlContext;
+    private transient SQLContext sqlContext;
 
     @Before
     public void setUp()
     {
         sc = new JavaSparkContext("local", "JavaAPISuite");
-        sqlContext = new JavaSQLContext(sc);
+        sqlContext = new SQLContext(sc);
     }
 
     @After
@@ -40,14 +40,14 @@ public class JavaTestSuite implements Serializable
     @Ignore
     public void pointTest()
     {
-        sqlContext.registerFunction("ST_POINT", new UDF2<Double, Double, Point>()
+        sqlContext.udf().register("ST_POINT", new UDF2<Double, Double, Point>()
         {
             @Override
             public Point call(final Double x, final Double y) throws Exception
             {
                 return new Point(x, y);
             }
-        }, DataType.BinaryType);
+        }, DataTypes.BinaryType);
 
         Row result = (Row) sqlContext.sql("SELECT ST_POINT(1.0, 2.0)")
                                      .first();

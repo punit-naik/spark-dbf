@@ -5,7 +5,8 @@ import com.esri.mapred.DBFInputFormat
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.hadoop.io._
 import org.apache.spark.sql._
-import org.apache.spark.sql.sources.PrunedScan
+import org.apache.spark.sql.sources.{BaseRelation, PrunedScan}
+import org.apache.spark.sql.types._
 
 import scala.collection.JavaConverters._
 
@@ -16,7 +17,7 @@ import scala.collection.JavaConverters._
  *
  * TODO - extend PrunedFilterScan to apply 'smart' filter !
  */
-case class DBFRelation(location: String)(@transient val sqlContext: SQLContext) extends PrunedScan {
+case class DBFRelation(location: String)(@transient val sqlContext: SQLContext) extends BaseRelation with PrunedScan {
 
   /**
    * http://polyglot-window.blogspot.com/2009/03/arm-blocks-in-scala-revisited.html
@@ -54,7 +55,7 @@ case class DBFRelation(location: String)(@transient val sqlContext: SQLContext) 
    * Determine the RDD Schema based on the DBF header info.
    * @return StructType instance
    */
-  override def schema = {
+  def schema = {
     val path = new Path(location)
     val fs = FileSystem.get(path.toUri, sqlContext.sparkContext.hadoopConfiguration)
     using(fs.open(path)) { dataInputStream => {

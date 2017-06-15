@@ -7,16 +7,16 @@ The "Ye Olde" DBF file format encapsulates data and schema just like the modern 
 quick to mutate the avro project and adapt it to our trusty and ubiquitous dbf format.
 
 ## Requirements
-This library requires Spark 1.2+ and depends on my [Shapefile](https://github.com/mraad/Shapefile) github project.
+This library requires Spark 1.3+ and depends on the [Shapefile](https://github.com/punit-naik/Shapefile) github project.
 
 ## Building
 Typically, [SBT](http://www.scala-sbt.org/) is used to build Scala based projects, but, I'm using [Maven](http://maven.apache.org/) to build this one.
 The pom.xml has plugins to compile scala and java sources.
 
-Make sure to first clone and install the [Shapefile](https://github.com/mraad/Shapefile) project, then
+Make sure to first clone and install the [Shapefile](https://github.com/punit-naik/Shapefile) project, then
 
 ```
-$ mvn clean install
+$ mvn clean install -Dspark.version=1.3.1 assembly:single
 ```
 
 ## Linking
@@ -25,38 +25,31 @@ You can link against this library in your program at the following coordinates:
 ```
 groupId: com.esri
 artifactId: spark-dbf
-version: 0.1
+version: 1.0
 ```
 
 The spark-dbf jar file can also be added to a Spark using the `--jars` command line option.
 For example, to include it when starting the spark shell:
 
 ```
-$ bin/spark-shell --jars spark-dbf-0.1.jar
+$ bin/spark-shell --jars spark-dbf-1.0-with-dependencies.jar
 ```
 
 ## Examples
 
-The following are based on the first 1 million records of the [NYC taxi trips](http://chriswhong.com/).
-you can download the sample dbf from [here](https://dl.dropboxusercontent.com/u/2193160/trips1M.dbf)
+You can download the sample dbf from [here](https://github.com/infused/dbf/blob/master/spec/fixtures/cp1251.dbf)
 
 
 ```
-$ wget https://dl.dropboxusercontent.com/u/2193160/trips1M.dbf
+$ wget https://github.com/infused/dbf/blob/master/spec/fixtures/cp1251.dbf
 ```
 
 ### Scala API
 
 ```scala
-import org.apache.spark.sql.SQLContext
-val sqlContext = new SQLContext(sc)
-import sqlContext._
 import com.esri.spark.dbf._
-val trips = sqlContext.dbfFile("trips1M.dbf")
-trips.schema.fields.foreach(println)
-trips.registerTempTable("trips")
-sql("select count(*) from trips").collect
-sql("select tripdist from trips order by tripdist desc limit 10").collect
+val testDBF = sqlContext.dbfFile("cp1251.dbf")
+testDBF.rdd.collect
 
 ```
 
@@ -67,7 +60,7 @@ DBF data can be queried in pure SQL or from python by registering the data as a 
 ```sql
 CREATE TEMPORARY TABLE trips
 USING com.esri.spark.dbf
-OPTIONS (path "trips1M.dbf")
+OPTIONS (path "cp1251.dbf")
 ```
 
 ### Java API
@@ -77,7 +70,7 @@ DBF files can be read using static functions in DBFUtils.
 ```java
 import com.esri.spark.dbf.DBFUtils;
 
-JavaSchemaRDD trips = DBFUtils.dbfFile(sqlContext, "trips1M.dbf");
+DataFrame trips = DBFUtils.dbfFile(sqlContext, "cp1251.dbf");
 ```
 
 ## Sample spark shell session with simple geometry UDF
@@ -91,11 +84,7 @@ $ ./spark-dbf.sh
 
 ```scala
 import com.esri.core.geometry.{GeometryEngine, Point}
-import org.apache.spark.sql.SQLContext
-val sqlContext = new SQLContext(sc)
-import sqlContext._
 import com.esri.spark.dbf._
-sqlContext.dbfFile("trips1M.dbf").registerTempTable("trips")
-sqlContext.registerFunction("ST_DISTANCE", (x1: Float, y1: Float, x2: Float, y2: Float) => GeometryEngine.geodesicDistanceOnWGS84(new Point(x1, y1), new Point(x2, y2)))
-sql("select tripdist*1609.34,ST_DISTANCE(plon,plat,dlon,dlat) from trips limit 20").foreach(println)
+val cp1251 = sqlContext.dbfFile("sp1251.dbf").registerTempTable("cp1251")
+sqlContext.sql("select * from cp1251").foreach(println)
 ```

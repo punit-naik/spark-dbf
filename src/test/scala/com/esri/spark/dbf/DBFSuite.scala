@@ -17,7 +17,7 @@ class DBFSuite extends FunSuite {
   test("dsl test") {
     val results = TestSQLContext
       .dbfFile(dbfFile)
-      .select('AText)
+      .select("AText")
       .collect()
 
     assert(results.size === 2)

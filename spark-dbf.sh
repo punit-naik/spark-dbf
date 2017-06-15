@@ -1,4 +1,4 @@
 #!/bin/sh
 dest=target
-libs=${dest}/libs
-spark-shell --jars ${dest}/spark-dbf-0.1.jar,${libs}/Shapefile-1.3.1.jar,${libs}/commons-io-2.4.jar,${libs}/esri-geometry-api-1.2.jar,${libs}/jackson-core-asl-1.9.11.jar,${libs}/json-20090211.jar
+mvn clean install -Dspark.version=1.3.1 assembly:single
+$SPARK_HOME/bin/spark-shell --jars ${dest}/spark-dbf-1.0-jar-with-dependencies.jar

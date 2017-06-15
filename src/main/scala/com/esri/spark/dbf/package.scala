@@ -9,7 +9,7 @@ package object dbf {
    */
   implicit class DBFSQLContext(sqlContext: SQLContext) {
     def dbfFile(filePath: String) =
-      sqlContext.baseRelationToSchemaRDD(DBFRelation(filePath)(sqlContext))
+      sqlContext.baseRelationToDataFrame(DBFRelation(filePath)(sqlContext))
   }
 
 }
